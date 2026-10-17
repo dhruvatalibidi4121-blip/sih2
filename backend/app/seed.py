@@ -40,10 +40,22 @@ def seed_alerts(db):
         db.add(Alert(alert_code=a[0], severity=a[1], title=a[2], description=a[3], category=a[4], recommended_action=a[5], status=a[6]))
     db.commit()
 
+def seed_weather(db):
+    from app.models import WeatherRecord
+    records = [
+        WeatherRecord(location_id="LOC-HUB", temperature=18.0, rainfall=5.0, visibility_km=10.0, snow_probability=0.0, wind_speed=12.0, weather_risk=15.0, severity="LOW", condition="Clear", source="SYNTHETIC", observed_at=utcnow()),
+        WeatherRecord(location_id="LOC-BRD-S", temperature=6.0, rainfall=25.0, visibility_km=6.0, snow_probability=10.0, wind_speed=28.0, weather_risk=45.0, severity="MEDIUM", condition="Moderate Rain", source="SYNTHETIC", observed_at=utcnow()),
+        WeatherRecord(location_id="LOC-BRD-M", temperature=-2.0, rainfall=40.0, visibility_km=3.5, snow_probability=65.0, wind_speed=42.0, weather_risk=72.0, severity="HIGH", condition="Snow Squall", source="SYNTHETIC", observed_at=utcnow()),
+        WeatherRecord(location_id="LOC-BRD-N", temperature=-6.0, rainfall=55.0, visibility_km=2.0, snow_probability=85.0, wind_speed=55.0, weather_risk=85.0, severity="CRITICAL", condition="Blizzard", source="SYNTHETIC", observed_at=utcnow()),
+    ]
+    db.add_all(records)
+    db.commit()
+
 def seed_full():
     init_db()
     with SessionLocal() as db:
-        for m in [Alert, Route, TransportAsset, InventoryItem, Location]: db.execute(delete(m))
+        from app.models import WeatherRecord
+        for m in [Alert, Route, TransportAsset, InventoryItem, Location, WeatherRecord]: db.execute(delete(m))
         
         for l in LOCATIONS:
             db.add(Location(id=l[0], name=l[1], node_type=l[2], latitude=l[3], longitude=l[4], elevation_m=l[5], terrain=l[6], region=l[7]))
@@ -56,8 +68,9 @@ def seed_full():
         
         seed_transport(db)
         seed_alerts(db)
+        seed_weather(db)
         
         db.commit()
-    logger.info("Seeded functional demo data with more assets and alerts")
+    logger.info("Seeded functional demo data with more assets, alerts, and weather")
 
 if __name__ == "__main__": seed_full()
